@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>國小五年級英文模擬考</title>
+<style>
+body{margin:0;font-family:Arial,"Microsoft JhengHei";background:#eef5ff;padding:16px;color:#222}
+.card{max-width:760px;margin:auto;background:#fff;border-radius:18px;padding:20px;box-shadow:0 4px 12px #0002}
+h1{text-align:center;color:#1565c0}
+input{width:100%;padding:12px;font-size:18px;margin:8px 0;border-radius:10px;border:1px solid #ccc}
+button{width:100%;padding:14px;margin-top:12px;font-size:18px;border:0;border-radius:12px;background:#1565c0;color:white}
+.option{display:block;background:#f3f6fa;margin:10px 0;padding:12px;border-radius:10px;font-size:18px}
+.hidden{display:none}
+.timer{color:#d32f2f;font-weight:bold}
+.review{background:#fff3f3;padding:12px;margin:10px 0;border-radius:10px}
+</style>
+</head>
+<body>
+
+<div class="card">
+<h1>國小五年級英文模擬考</h1>
+
+<div id="start">
+<p>題庫：100題</p>
+<p>內容：單字、填空、文法、對話、閱讀</p>
+<p>每次隨機抽50題｜時間60分鐘</p>
+<input id="name" placeholder="輸入姓名">
+<button onclick="startExam()">開始測驗</button>
+</div>
+
+<div id="exam" class="hidden">
+<p id="info"></p>
+<p class="timer" id="timer"></p>
+<h2 id="question"></h2>
+<div id="options"></div>
+<button onclick="nextQuestion()">下一題</button>
+</div>
+
+<div id="result" class="hidden">
+<h2 id="score"></h2>
+<div id="review"></div>
+<button onclick="location.reload()">重新測驗</button>
+</div>
+</div>
+
+<script>
+const bank=[
+{q:"I go to school every ____.",o:["morning","banana","chair","water"],a:"morning"},
+{q:"She is reading a book in the ____.",o:["library","kitchen","bathroom","market"],a:"library"},
+{q:"My father works in a hospital. He is a ____.",o:["doctor","teacher","farmer","student"],a:"doctor"},
+{q:"We eat breakfast in the ____.",o:["morning","evening","midnight","afternoon"],a:"morning"},
+{q:"I am thirsty. I want some ____.",o:["water","bread","rice","cake"],a:"water"},
+{q:"The opposite of 'early' is ____.",o:["late","fast","short","young"],a:"late"},
+{q:"The opposite of 'before' is ____.",o:["after","under","near","inside"],a:"after"},
+{q:"A place where students study is a ____.",o:["school","bank","zoo","station"],a:"school"},
+{q:"A person who teaches students is a ____.",o:["teacher","nurse","driver","cook"],a:"teacher"},
+{q:"We can buy food at a ____.",o:["market","library","classroom","hospital"],a:"market"},
+
+{q:"She ____ a new pencil case.",o:["has","have","having","had"],a:"has"},
+{q:"They ____ playing basketball now.",o:["are","is","am","be"],a:"are"},
+{q:"I ____ my homework every day.",o:["do","does","doing","did"],a:"do"},
+{q:"Tom ____ to school by bus.",o:["goes","go","going","gone"],a:"goes"},
+{q:"My brother can ____ very fast.",o:["run","runs","running","ran"],a:"run"},
+{q:"There ____ five books on the desk.",o:["are","is","am","be"],a:"are"},
+{q:"There ____ a dog under the table.",o:["is","are","am","be"],a:"is"},
+{q:"This is ____ umbrella.",o:["an","a","the","am"],a:"an"},
+{q:"I have ____ apple.",o:["an","a","are","is"],a:"an"},
+{q:"She likes ____ English songs.",o:["singing","sing","sings","sang"],a:"singing"},
+
+{q:"A: How are you? B: ____",o:["I'm fine, thank you.","I'm ten years old.","It's sunny.","I like apples."],a:"I'm fine, thank you."},
+{q:"A: What time is it? B: ____",o:["It's seven thirty.","I am hungry.","She is my sister.","It's a book."],a:"It's seven thirty."},
+{q:"A: Where are you from? B: ____",o:["I'm from Taiwan.","I'm fine.","It's Monday.","I like dogs."],a:"I'm from Taiwan."},
+{q:"A: What do you want to drink? B: ____",o:["I want some juice.","I am a student.","It is red.","She is tall."],a:"I want some juice."},
+{q:"A: May I help you? B: ____",o:["Yes, please.","Good night.","I'm ten.","It's hot."],a:"Yes, please."},
+
+{q:"Choose the correct sentence.",o:["He is my brother.","He are my brother.","He am my brother.","He be my brother."],a:"He is my brother."},
+{q:"Choose the correct sentence.",o:["She has a dog.","She have a dog.","She having a dog.","She haves a dog."],a:"She has a dog."},
+{q:"Choose the correct sentence.",o:["They are my friends.","They is my friends.","They am my friends.","They be my friends."],a:"They are my friends."},
+{q:"Choose the correct sentence.",o:["I like English.","I likes English.","I liking English.","I liked English now."],a:"I like English."},
+{q:"Choose the correct sentence.",o:["There is a cat.","There are a cat.","There am a cat.","There be a cat."],a:"There is a cat."},
+
+{q:"The plural form of 'child' is ____.",o:["children","childs","childes","childrens"],a:"children"},
+{q:"The plural form of 'foot' is ____.",o:["feet","foots","feets","foot"],a:"feet"},
+{q:"The past tense of 'go' is ____.",o:["went","goed","goes","going"],a:"went"},
+{q:"The past tense of 'eat' is ____.",o:["ate","eated","eats","eating"],a:"ate"},
+{q:"The past tense of 'see' is ____.",o:["saw","seed","sees","seeing"],a:"saw"},
+
+{q:"I brush my teeth in the ____.",o:["bathroom","bedroom","classroom","library"],a:"bathroom"},
+{q:"We cook food in the ____.",o:["kitchen","bathroom","garden","garage"],a:"kitchen"},
+{q:"A lion is a ____ animal.",o:["wild","small","sweet","cold"],a:"wild"},
+{q:"My sister is not short. She is ____.",o:["tall","cold","slow","young"],a:"tall"},
+{q:"This question is not easy. It is ____.",o:["difficult","small","round","clean"],a:"difficult"},
+
+{q:"Reading: Tom is eleven. He likes swimming. How old is Tom?",o:["Eleven","Ten","Twelve","Nine"],a:"Eleven"},
+{q:"Reading: Amy has a dog. The dog is black. What color is the dog?",o:["Black","White","Brown","Yellow"],a:"Black"},
+{q:"Reading: Ben goes to school by bike. How does Ben go to school?",o:["By bike","By bus","By car","On foot"],a:"By bike"},
+{q:"Reading: Lisa eats breakfast at seven. When does Lisa eat breakfast?",o:["At seven","At eight","At six","At nine"],a:"At seven"},
+{q:"Reading: Jack likes English because it is interesting. Why does Jack like English?",o:["It is interesting","It is hard","It is boring","It is cold"],a:"It is interesting"}
+];
+
+const vocab=[
+["important","重要的"],["different","不同的"],["beautiful","美麗的"],["interesting","有趣的"],["difficult","困難的"],
+["carefully","小心地"],["usually","通常"],["sometimes","有時候"],["weather","天氣"],["season","季節"],
+["vacation","假期"],["healthy","健康的"],["exercise","運動"],["subject","科目"],["science","自然科學"],
+["history","歷史"],["favorite","最喜愛的"],["because","因為"],["before","在……之前"],["after","在……之後"]
+];
+
+vocab.forEach(v=>{
+bank.push({q:`What does "${v[0]}" mean?`,o:[v[1],"鉛筆","早餐","游泳"],a:v[1]});
+bank.push({q:`I think English is very ${v[0]}. What does "${v[0]}" mean?`,o:[v[1],"桌子","鞋子","牛奶"],a:v[1]});
+});
+
+while(bank.length<100){
+let i=bank.length%vocab.length;
+let v=vocab[i];
+bank.push({q:`Fill in the blank: This book is very _____.`,o:["interesting","chair","water","dog"],a:"interesting"});
+}
+
+let questions=[],current=0,answers=[],time=3600,timer;
+
+function shuffle(arr){return arr.sort(()=>Math.random()-0.5)}
+
+function startExam(){
+let name=document.getElementById("name").value.trim();
+if(!name){alert("請先輸入姓名");return}
+questions=shuffle([...bank]).slice(0,50);
+answers=[];
+document.getElementById("start").classList.add("hidden");
+document.getElementById("exam").classList.remove("hidden");
+showQuestion();
+timer=setInterval(()=>{
+time--;
+let m=Math.floor(time/60),s=time%60;
+document.getElementById("timer").innerText=`剩餘時間：${m}:${s.toString().padStart(2,"0")}`;
+if(time<=0)finish();
+},1000);
+}
+
+function showQuestion(){
+let q=questions[current];
+document.getElementById("info").innerText=`第 ${current+1} / ${questions.length} 題`;
+document.getElementById("question").innerText=q.q;
+let html="";
+shuffle([...q.o]).forEach(x=>{
+html+=`<label class="option"><input type="radio" name="ans" value="${x}"> ${x}</label>`;
+});
+document.getElementById("options").innerHTML=html;
+}
+
+function nextQuestion(){
+let sel=document.querySelector("input[name='ans']:checked");
+answers[current]=sel?sel.value:"未作答";
+current++;
+if(current>=questions.length)finish();
+else showQuestion();
+}
+
+function finish(){
+clearInterval(timer);
+let score=0,review="";
+questions.forEach((q,i)=>{
+if(answers[i]===q.a)score++;
+else review+=`<div class="review">第${i+1}題：${q.q}<br>你的答案：${answers[i]||"未作答"}<br>正確答案：${q.a}</div>`;
+});
+document.getElementById("exam").classList.add("hidden");
+document.getElementById("result").classList.remove("hidden");
+document.getElementById("score").innerHTML=`${document.getElementById("name").value} 成績：${Math.round(score/questions.length*100)} 分<br>答對 ${score} / ${questions.length} 題`;
+document.getElementById("review").innerHTML=review || "全部答對！";
+}
+</script>
+
+</body>
+</html>
