@@ -341,14 +341,26 @@ function showQuestion(){
   const q=questions[current];
   document.getElementById("info").innerText="第 "+(current+1)+" / "+questions.length+" 題";
   document.getElementById("type").innerHTML='<span class="badge">'+esc(q.type)+'</span>';
-  document.getElementById("question").innerText=q.q;
+  document.getElementById("question").innerHTML='<button class="secondary" onclick="speakQuestion()">🔊 播放題目</button><br><br>'+q.q;
   let html="";
   shuffle(q.options.slice()).forEach(function(opt){
     html+='<label class="option"><input type="radio" name="ans" value="'+esc(opt)+'"> '+esc(opt)+'</label>';
   });
   document.getElementById("options").innerHTML=html;
 }
+function speakQuestion(){
+  const q=questions[current];
 
+  speechSynthesis.cancel();
+
+  const msg=new SpeechSynthesisUtterance(q.q);
+
+  msg.lang="en-US";
+  msg.rate=0.9;
+  msg.pitch=1;
+
+  speechSynthesis.speak(msg);
+}
 function nextQuestion(){
   const selected=document.querySelector("input[name='ans']:checked");
   answers[current]=selected?selected.value:"未作答";
