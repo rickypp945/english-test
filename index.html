@@ -2,110 +2,106 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>國小五年級英文模擬考 A版</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>國小五六年級英文聽力測驗</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial,"Microsoft JhengHei",sans-serif;background:#eef5ff;color:#222;padding:16px}
-.card{max-width:820px;margin:auto;background:white;border-radius:20px;padding:22px;box-shadow:0 6px 18px rgba(0,0,0,.12)}
-h1{text-align:center;color:#1565c0;font-size:30px}
-h2{font-size:22px;line-height:1.5}
-p{font-size:17px;line-height:1.6}
-input{width:100%;padding:14px;font-size:18px;border:1px solid #bbb;border-radius:12px;margin:8px 0}
-button{width:100%;padding:15px;margin-top:12px;font-size:19px;font-weight:bold;border:0;border-radius:14px;background:#1565c0;color:white}
+body{margin:0;font-family:Arial,"Microsoft JhengHei",sans-serif;background:#eef6ff;color:#222}
+.card{max-width:820px;margin:25px auto;background:white;border-radius:24px;padding:28px;box-shadow:0 6px 20px #0001}
+h1{text-align:center;color:#1565c0;font-size:34px}
+h2{font-size:26px;line-height:1.5}
+input{width:100%;padding:15px;font-size:18px;border-radius:12px;border:1px solid #ccc;margin:8px 0}
+button{width:100%;padding:16px;margin-top:12px;font-size:20px;border:0;border-radius:14px;background:#1565c0;color:white;font-weight:bold}
 button.secondary{background:#546e7a}
-.option{display:block;background:#f3f6fa;margin:10px 0;padding:14px;border-radius:12px;font-size:18px;line-height:1.4}
-.option input{width:auto;margin-right:8px}
+button.sound{background:#ff9800}
+.option{display:block;background:#f3f6fa;margin:12px 0;padding:18px;border-radius:16px;font-size:20px}
+.option input{width:auto;margin-right:12px}
 .hidden{display:none}
-.timer{color:#d32f2f;font-weight:bold}
-.badge{display:inline-block;background:#e3f2fd;color:#1565c0;border-radius:999px;padding:6px 12px;margin:4px;font-weight:bold}
-.review{background:#fff3f3;padding:12px;margin:10px 0;border-left:5px solid #e53935;border-radius:10px}
-.ok{background:#e8f5e9;border-left:5px solid #43a047}
-.meta{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
-.small{font-size:14px;color:#666}
+.timer{color:#d32f2f;font-weight:bold;font-size:22px}
+.tag{display:inline-block;background:#e3f2fd;color:#1565c0;padding:10px 18px;border-radius:999px;font-weight:bold;margin:10px 0}
+.review{background:#fff3cd;padding:12px;border-radius:12px;margin:10px 0}
+.rank{background:#e8f5e9;padding:12px;border-radius:12px;margin:8px 0;font-size:18px}
+.small{color:#666;font-size:15px;line-height:1.6}
 </style>
 </head>
 
 <body>
-<div class="card">
-<h1>國小五年級英文模擬考</h1>
-
-<div id="start">
-<p>
-<span class="badge">300題題庫</span>
-<span class="badge">單字選擇</span>
-<span class="badge">單字填空</span>
-<span class="badge">文法</span>
-<span class="badge">對話</span>
-<span class="badge">閱讀</span>
-</p>
-<p>每次隨機抽 <b>50題</b>，時間 <b>60分鐘</b>，題目不重複。</p>
-<input id="studentName" placeholder="輸入姓名">
-<input id="studentClass" placeholder="輸入班級，可不填">
+<div class="card" id="start">
+<h1>國小五六年級英文聽力測驗</h1>
+<p>題庫共 300 題，每次隨機抽 50 題，不重複。</p>
+<input id="studentName" placeholder="請輸入姓名">
+<input id="studentClass" placeholder="班級 / 隊名，可不填">
 <button onclick="startExam()">開始測驗</button>
-<p class="small">作答後按「下一題」，最後會顯示成績與錯題。</p>
+<p class="small">說明：每題請先按「🔊播放題目」，聽完後選答案。</p>
 </div>
 
-<div id="exam" class="hidden">
-<div class="meta">
+<div class="card hidden" id="exam">
+<h1>英文聽力測驗</h1>
+<div style="display:flex;justify-content:space-between;gap:10px;align-items:center">
 <p id="info"></p>
 <p class="timer" id="timer"></p>
 </div>
-<p id="type"></p>
+<div class="tag" id="type"></div>
+<button class="sound" onclick="speakQuestion()">🔊 播放題目</button>
 <h2 id="question"></h2>
 <div id="options"></div>
 <button onclick="nextQuestion()">下一題</button>
 <button class="secondary" onclick="finish()">提前交卷</button>
 </div>
 
-<div id="result" class="hidden">
-<h2 id="score"></h2>
+<div class="card hidden" id="result">
+<h1>測驗結果</h1>
+<div id="score"></div>
+<h2>排行榜 Top 10</h2>
+<div id="ranking"></div>
+<h2>錯題檢討</h2>
 <div id="review"></div>
 <button onclick="location.reload()">重新測驗</button>
 </div>
-</div>
 
 <script>
-const bank=[];
+let bank=[];
+let questions=[];
+let current=0;
+let answers=[];
+let time=60*60;
+let timer=null;
 
 function shuffle(arr){
-  return arr.map(function(v){return [Math.random(),v];}).sort(function(a,b){return a[0]-b[0];}).map(function(x){return x[1];});
+  return arr.map(v=>[Math.random(),v]).sort((a,b)=>a[0]-b[0]).map(v=>v[1]);
 }
 
-function addQuestion(type,q,options,answer){
-  bank.push({type:type,q:q,options:shuffle(options),answer:answer});
-}
-
-function wrong(pool,ans,n){
-  return shuffle(pool.filter(function(x){return x!==ans;})).slice(0,n);
+function addQuestion(type,listen,question,answer,options){
+  bank.push({
+    type:type,
+    listen:listen,
+    q:question,
+    answer:answer,
+    options:shuffle([...new Set(options)])
+  });
 }
 
 const vocab=[
-["ability","能力"],["accident","意外"],["address","地址"],["airport","機場"],["almost","幾乎"],
-["already","已經"],["always","總是"],["angry","生氣的"],["arrive","到達"],["autumn","秋天"],
-["bakery","麵包店"],["believe","相信"],["borrow","借入"],["breakfast","早餐"],["bridge","橋"],
-["careful","小心的"],["careless","粗心的"],["center","中心"],["change","改變"],["choose","選擇"],
-["city","城市"],["cloudy","多雲的"],["collect","收集"],["comfortable","舒服的"],["country","國家"],
-["dangerous","危險的"],["decide","決定"],["delicious","美味的"],["different","不同的"],["difficult","困難的"],
-["direction","方向"],["doctor","醫生"],["during","在……期間"],["early","早的"],["enough","足夠的"],
-["everyone","每個人"],["exercise","運動"],["expensive","昂貴的"],["favorite","最喜愛的"],["festival","節日"],
-["finish","完成"],["foreign","外國的"],["forget","忘記"],["friendly","友善的"],["future","未來"],
-["habit","習慣"],["healthy","健康的"],["history","歷史"],["holiday","假日"],["important","重要的"],
-["interesting","有趣的"],["invite","邀請"],["island","島嶼"],["language","語言"],["library","圖書館"],
-["medicine","藥"],["message","訊息"],["minute","分鐘"],["mountain","山"],["museum","博物館"],
-["necessary","必要的"],["neighbor","鄰居"],["nervous","緊張的"],["practice","練習"],["popular","受歡迎的"],
-["possible","可能的"],["problem","問題"],["protect","保護"],["quiet","安靜的"],["remember","記得"],
-["restaurant","餐廳"],["season","季節"],["special","特別的"],["strange","奇怪的"],["subject","科目"],
-["successful","成功的"],["suddenly","突然地"],["surprised","驚訝的"],["traffic","交通"],["umbrella","雨傘"],
-["vacation","假期"],["weather","天氣"],["wonderful","很棒的"],["usually","通常"],["sometimes","有時候"]
+["usually","通常"],["important","重要的"],["weather","天氣"],["library","圖書館"],["museum","博物館"],
+["station","車站"],["restaurant","餐廳"],["dictionary","字典"],["healthy","健康的"],["practice","練習"],
+["exercise","運動"],["message","訊息"],["season","季節"],["center","中心"],["dangerous","危險的"],
+["comfortable","舒服的"],["difficult","困難的"],["favorite","最喜愛的"],["careful","小心的"],["successful","成功的"],
+["suddenly","突然地"],["holiday","假期"],["vegetable","蔬菜"],["medicine","藥"],["umbrella","雨傘"],
+["borrow","借入"],["protect","保護"],["nervous","緊張的"],["traffic","交通"],["planet","行星"],
+["notebook","筆記本"],["weekend","週末"],["grandparents","祖父母"],["breakfast","早餐"],["homework","作業"],
+["swimming","游泳"],["basketball","籃球"],["birthday","生日"],["mountain","山"],["beach","海灘"],
+["hospital","醫院"],["post office","郵局"],["supermarket","超市"],["airport","機場"],["classmate","同學"],
+["neighbor","鄰居"],["firefighter","消防員"],["scientist","科學家"],["engineer","工程師"],["artist","藝術家"],
+["quiet","安靜的"],["noisy","吵雜的"],["early","早的"],["late","遲到的"],["cheap","便宜的"],
+["expensive","昂貴的"],["delicious","美味的"],["fresh","新鮮的"],["popular","受歡迎的"],["modern","現代的"],
+["future","未來"],["history","歷史"],["culture","文化"],["nature","自然"],["environment","環境"],
+["energy","能源"],["habit","習慣"],["fever","發燒"],["cough","咳嗽"],["headache","頭痛"],
+["dentist","牙醫"],["ticket","票"],["schedule","時刻表"],["direction","方向"],["address","地址"],
+["problem","問題"],["answer","答案"],["question","問題"],["example","例子"],["reason","原因"]
 ];
 
-const zh=vocab.map(function(v){return v[1];});
-const en=vocab.map(function(v){return v[0];});
-
-vocab.forEach(function(v){
-  addQuestion("單字選擇","What does \""+v[0]+"\" mean?",[v[1]].concat(wrong(zh,v[1],3)),v[1]);
-  addQuestion("單字反選","Which word means「"+v[1]+"」?",[v[0]].concat(wrong(en,v[0],3)),v[0]);
+vocab.forEach(v=>{
+  addQuestion("單字聽力",`What does ${v[0]} mean?`,`What does "${v[0]}" mean?`,v[1],[v[1],"天氣","重要的","餐廳","練習","假期"]);
 });
 
 const grammar=[
@@ -116,207 +112,121 @@ const grammar=[
 ["There ___ many students in the classroom.","are",["is","are","am","be"]],
 ["Tom ___ to school by bus every day.","goes",["go","goes","going","went"]],
 ["I ___ my homework after dinner.","do",["do","does","doing","did"]],
-["My brother ___ a new bike.","has",["have","has","having","had"]],
-["We ___ English on Monday.","have",["have","has","having","had"]],
+["My brother ___ a new bike.","has",["have","has","had","having"]],
 ["She can ___ very well.","swim",["swim","swims","swimming","swam"]],
-["I like ___ books.","reading",["read","reads","reading","readed"]],
-["He enjoys ___ basketball.","playing",["play","plays","playing","played"]],
-["This is ___ apple.","an",["a","an","the","am"]],
-["That is ___ useful book.","a",["a","an","the","are"]],
-["I went to the park ___ Sunday.","on",["in","on","at","to"]],
-["We have lunch ___ noon.","at",["in","on","at","for"]],
-["She was born ___ July.","in",["in","on","at","to"]],
-["Please listen ___ your teacher.","to",["to","for","at","in"]],
-["I am interested ___ music.","in",["in","on","at","with"]],
-["He is good ___ math.","at",["in","on","at","for"]],
-["The cat is ___ the table.","under",["under","happy","before","between"]],
-["The bank is ___ the library and the post office.","between",["between","under","after","during"]],
-["The opposite of early is ___.","late",["late","fast","short","young"]],
-["The opposite of dangerous is ___.","safe",["safe","angry","quiet","dirty"]],
-["The past tense of go is ___.","went",["went","goed","goes","going"]],
-["The past tense of eat is ___.","ate",["ate","eated","eats","eating"]],
-["The past tense of see is ___.","saw",["saw","seed","sees","seeing"]],
-["The plural form of child is ___.","children",["children","childs","childes","childrens"]],
-["The plural form of foot is ___.","feet",["feet","foots","feets","foot"]],
-["The plural form of tooth is ___.","teeth",["teeth","tooths","toothes","tooth"]],
-["She speaks English ___.","well",["well","good","nice","bad"]],
-["This test is ___ than that one.","easier",["easy","easier","easiest","more easy"]],
-["Today is the ___ day of the week.","first",["one","first","once","finally"]],
-["I have two ___.","sandwiches",["sandwich","sandwichs","sandwiches","sandwichies"]],
-["He needs ___ water.","some",["some","any","many","a"]],
-["Do you have ___ questions?","any",["some","any","much","a"]],
-["How ___ apples do you have?","many",["many","much","old","often"]],
-["How ___ milk do you want?","much",["many","much","old","far"]],
-["She is taller ___ her brother.","than",["than","then","that","this"]],
-["I am hungry, ___ I want to eat.","so",["so","because","but","or"]],
-["I stayed home ___ it rained.","because",["because","so","but","and"]],
-["He is tired, ___ he keeps studying.","but",["but","because","so","or"]],
-["Would you like ___ tea?","some",["some","many","a","any"]],
-["May I ___ your pencil?","borrow",["borrow","lend","keep","bring"]],
-["Please ___ your homework before dinner.","finish",["finish","finished","finishing","finishes"]],
-["Don't ___ to bring your umbrella.","forget",["forget","forgot","forgets","forgetting"]],
-["We should ___ the environment.","protect",["protect","practice","invite","collect"]],
-["She decided ___ at home.","to stay",["to stay","stay","staying","stayed"]],
-["It is important ___ every day.","to practice",["to practice","practice","practicing","practiced"]]
+["Kevin enjoys ___ basketball.","playing",["play","plays","playing","played"]],
+["This is ___ apple.","an",["a","an","the","some"]],
+["That is ___ useful book.","a",["a","an","the","any"]],
+["We went to the park ___ Sunday.","on",["in","on","at","for"]],
+["I get up ___ seven o'clock.","at",["in","on","at","for"]],
+["The cat is ___ the table.","under",["under","happy","before","because"]],
+["The library is ___ the post office.","behind",["behind","between","during","never"]],
+["Today is ___ than yesterday.","hotter",["hot","hotter","hottest","heat"]],
+["This question is ___ than that one.","easier",["easy","easier","easiest","easily"]],
+["Monday is the ___ day of the week.","first",["one","first","once","only"]],
+["How ___ water do you drink?","much",["many","much","old","far"]],
+["How ___ books do you have?","many",["many","much","old","far"]],
+["I am tired, ___ I keep studying.","but",["but","because","so","or"]],
+["It rained, ___ I stayed home.","so",["so","because","but","and"]],
+["Please ___ your name on the paper.","write",["write","writes","writing","wrote"]],
+["Don't forget ___ your umbrella.","to bring",["bring","to bring","bringing","brought"]],
+["We should ___ the environment.","protect",["protect","protects","protected","protecting"]],
+["She decided ___ at home.","to stay",["stay","to stay","staying","stayed"]],
+["It is important ___ every day.","to practice",["practice","to practice","practicing","practiced"]]
 ];
 
-grammar.forEach(function(g){
-  addQuestion("文法",g[0],g[2],g[1]);
-});
+for(let i=0;i<90;i++){
+  const g=grammar[i%grammar.length];
+  addQuestion("文法聽力",g[0],g[0],g[1],g[2]);
+}
 
-const cloze=[
-["I go to the ___ to borrow books.","library",["library","restaurant","airport","bakery"]],
-["We can see airplanes at the ___.","airport",["airport","museum","bridge","market"]],
-["The soup is very ___. I like it.","delicious",["delicious","dangerous","careless","foreign"]],
-["Please be ___ when you cross the street.","careful",["careful","careless","angry","popular"]],
-["This chair is very ___.","comfortable",["comfortable","dangerous","nervous","strange"]],
-["The math problem is too ___.","difficult",["difficult","cloudy","friendly","healthy"]],
-["My ___ subject is English.","favorite",["favorite","foreign","future","careless"]],
-["It is ___ to drink enough water.","healthy",["healthy","angry","quiet","early"]],
-["I need more ___ before the test.","practice",["practice","medicine","traffic","season"]],
-["The road has heavy ___.","traffic",["traffic","history","habit","language"]],
-["I want to ___ my friend to my birthday party.","invite",["invite","arrive","forget","protect"]],
-["Please ___ your name on the paper.","write",["write","ride","read","watch"]],
-["He felt ___ before the contest.","nervous",["nervous","comfortable","safe","cloudy"]],
-["The museum is in the city ___.","center",["center","season","shoulder","message"]],
-["The weather is ___ today. It may rain.","cloudy",["cloudy","delicious","healthy","friendly"]],
-["I want to learn a new ___.","language",["language","medicine","airport","shoulder"]],
-["My neighbor is very ___.","friendly",["friendly","dangerous","necessary","foreign"]],
-["This book is ___. I want to read more.","interesting",["interesting","careless","angry","quiet"]],
-["We will travel to a small ___.","island",["island","habit","message","minute"]],
-["I got a ___ from my teacher.","message",["message","mountain","traffic","season"]],
-["This bag is too ___. I don't have enough money.","expensive",["expensive","comfortable","healthy","quiet"]],
-["It is ___ to finish the work today.","possible",["possible","careless","angry","foreign"]],
-["We must solve this ___.","problem",["problem","season","minute","airport"]],
-["The doctor gave me some ___.","medicine",["medicine","traffic","history","message"]],
-["Do you know the ___ to the museum?","direction",["direction","habit","season","subject"]],
-["He lives in a different ___.","country",["country","message","shoulder","bakery"]],
-["I ___ that he is right.","believe",["believe","borrow","arrive","collect"]],
-["May I ___ your ruler?","borrow",["borrow","protect","choose","forget"]],
-["Please ___ one answer.","choose",["choose","arrive","finish","invite"]],
-["Many people like this song. It is very ___.","popular",["popular","dangerous","careless","foreign"]],
-["The answer is ___.","correct",["correct","collect","country","cloudy"]],
-["He walks very ___.","slowly",["slowly","slow","slower","slowness"]],
-["The movie was very ___.","exciting",["exciting","excited","excite","excitement"]],
-["I felt ___ after running.","tired",["tired","tiring","tire","tires"]],
-["The classroom is ___ than before.","cleaner",["cleaner","cleanest","clean","more clean"]]
+const dialogues=[
+["A: What are you doing this weekend? B: I am going to visit my grandparents.","What will the boy do this weekend?","Visit his grandparents",["Visit his grandparents","Go swimming","Buy a book","Stay at school"]],
+["A: Why are you late? B: I missed the bus.","Why is the girl late?","She missed the bus",["She missed the bus","She lost her bag","She was sick","She forgot homework"]],
+["A: How often do you practice swimming? B: Three times a week.","How often does he practice swimming?","Three times a week",["Three times a week","Every day","Once a month","Never"]],
+["A: What does your father do? B: He is a doctor.","What is his father?","A doctor",["A doctor","A teacher","A driver","A farmer"]],
+["A: Where is the library? B: It is next to the post office.","Where is the library?","Next to the post office",["Next to the post office","Behind the park","In the museum","Near the beach"]],
+["A: What is wrong? B: I have a headache.","What is wrong with the speaker?","A headache",["A headache","A fever","A cough","A toothache"]],
+["A: What did Amy buy? B: She bought a new dictionary.","What did Amy buy?","A dictionary",["A dictionary","A notebook","A ticket","An umbrella"]],
+["A: Which sport do you like best? B: I like swimming best.","Which sport does the speaker like best?","Swimming",["Swimming","Baseball","Basketball","Running"]],
+["A: How much is the sandwich? B: It is fifty dollars.","How much is the sandwich?","Fifty dollars",["Fifty dollars","Fifteen dollars","Five dollars","Forty dollars"]],
+["A: What is the weather like? B: It is cloudy and windy.","How is the weather?","Cloudy and windy",["Cloudy and windy","Sunny and hot","Rainy and cold","Snowy"]],
+["A: When is your birthday? B: It is in July.","When is the birthday?","In July",["In July","In June","On Monday","At seven"]],
+["A: How do you go to school? B: By bike.","How does the speaker go to school?","By bike",["By bike","By bus","On foot","By train"]],
+["A: Why do you like English? B: Because it is useful.","Why does the speaker like English?","Because it is useful",["Because it is useful","Because it is hard","Because it is expensive","Because it is noisy"]],
+["A: Can you swim? B: Yes, I can.","Can the speaker swim?","Yes, he can",["Yes, he can","No, he can't","He can sing","He can cook"]],
+["A: What day is today? B: It is Wednesday.","What day is today?","Wednesday",["Wednesday","Monday","Friday","Sunday"]]
 ];
 
-cloze.forEach(function(c){
-  addQuestion("單字填空",c[0],c[2],c[1]);
-});
-
-const dialogue=[
-["A: How are you? B: ___","I'm fine, thank you.",["I'm fine, thank you.","It is Monday.","I like rice.","She is ten."]],
-["A: What time is it? B: ___","It's seven thirty.",["It's seven thirty.","I'm hungry.","He is my brother.","It's blue."]],
-["A: Where are you from? B: ___","I'm from Taiwan.",["I'm from Taiwan.","I'm fine.","It is sunny.","I like dogs."]],
-["A: May I help you? B: ___","Yes, please.",["Yes, please.","Good night.","I'm ten.","It's hot."]],
-["A: What do you want to drink? B: ___","I want some juice.",["I want some juice.","I am a student.","It is red.","She is tall."]],
-["A: Whose book is this? B: ___","It's mine.",["It's mine.","It's sunny.","I am fine.","It's Monday."]],
-["A: How often do you exercise? B: ___","Every weekend.",["Every weekend.","At school.","By bus.","It is red."]],
-["A: Why do you like English? B: ___","Because it is interesting.",["Because it is interesting.","Yes, I do.","At seven.","In Taiwan."]],
-["A: How do you go to school? B: ___","By bike.",["By bike.","At home.","In July.","It is big."]],
-["A: What is your favorite subject? B: ___","My favorite subject is science.",["My favorite subject is science.","I am eleven.","It is cloudy.","Yes, please."]],
-["A: Are you ready? B: ___","Yes, I am.",["Yes, I am.","Yes, it is.","Yes, she does.","Yes, he can."]],
-["A: Does she like music? B: ___","Yes, she does.",["Yes, she does.","Yes, I am.","Yes, they are.","Yes, he can."]],
-["A: Can you swim? B: ___","Yes, I can.",["Yes, I can.","Yes, I do.","Yes, it is.","Yes, she does."]],
-["A: What day is today? B: ___","It's Wednesday.",["It's Wednesday.","It's cold.","It's mine.","It's twenty dollars."]],
-["A: How much is the sandwich? B: ___","It's fifty dollars.",["It's fifty dollars.","It's sunny.","It's on the desk.","It's my brother."]],
-["A: What's the weather like? B: ___","It's cloudy.",["It's cloudy.","It's mine.","It's seven.","It's a pencil."]],
-["A: Where is the library? B: ___","It's next to the bank.",["It's next to the bank.","It's delicious.","It's my name.","It's ten years old."]],
-["A: What did you do yesterday? B: ___","I visited my grandparents.",["I visited my grandparents.","I go to school.","I am studying now.","I will go tomorrow."]],
-["A: What's wrong? B: ___","I have a headache.",["I have a headache.","I like apples.","It is a dog.","She is my friend."]],
-["A: Would you like some tea? B: ___","Yes, please.",["Yes, please.","I'm eleven.","It's Monday.","By bus."]]
-];
-
-dialogue.forEach(function(d){
-  addQuestion("對話",d[0],d[2],d[1]);
-});
+for(let i=0;i<75;i++){
+  const d=dialogues[i%dialogues.length];
+  addQuestion("對話聽力",d[0],d[1],d[2],d[3]);
+}
 
 const readings=[
 {
 text:"Tom is eleven years old. He likes swimming and practices every Saturday morning. His dream is to join a school swimming team.",
 qs:[
-["How old is Tom?","Eleven",["Eleven","Ten","Twelve","Nine"]],
-["What sport does Tom like?","Swimming",["Swimming","Basketball","Baseball","Soccer"]],
-["When does he practice?","Every Saturday morning",["Every Saturday morning","Every Monday night","Every Sunday afternoon","Every Friday evening"]],
-["What is his dream?","To join a school swimming team",["To join a school swimming team","To become a doctor","To buy a bike","To learn cooking"]]
+["How old is Tom?","Eleven",["Eleven","Ten","Twelve","Thirteen"]],
+["What sport does Tom like?","Swimming",["Swimming","Running","Basketball","Baseball"]],
+["When does he practice?","Every Saturday morning",["Every Saturday morning","Every Sunday night","After dinner","At school"]],
+["What is his dream?","To join a school swimming team",["To join a school swimming team","To be a doctor","To buy a bike","To visit Japan"]]
 ]
 },
 {
-text:"Amy has a small dog named Coco. Coco is black and white. Every evening, Amy takes Coco to the park for a walk.",
+text:"Amy has a small dog named Coco. Coco is black and very friendly. Amy walks Coco in the park after school.",
 qs:[
 ["What pet does Amy have?","A dog",["A dog","A cat","A bird","A rabbit"]],
-["What is the dog's name?","Coco",["Coco","Lucky","Momo","Bobo"]],
-["What color is Coco?","Black and white",["Black and white","Brown","Yellow","Gray"]],
-["Where does Amy take Coco?","To the park",["To the park","To school","To the museum","To the library"]]
+["What is the dog's name?","Coco",["Coco","Lucky","Black","Amy"]],
+["What color is Coco?","Black",["Black","White","Brown","Yellow"]],
+["Where does Amy walk Coco?","In the park",["In the park","At school","In the library","At home"]]
 ]
 },
 {
 text:"Ben went to the science museum with his classmates. They learned about planets and space. Ben wrote many notes in his notebook.",
 qs:[
-["Where did Ben go?","The science museum",["The science museum","The zoo","The bakery","The airport"]],
-["Who went with Ben?","His classmates",["His classmates","His parents","His neighbors","His cousins"]],
-["What did they learn about?","Planets and space",["Planets and space","Food and cooking","Music and art","Sports and games"]],
-["Where did Ben write notes?","In his notebook",["In his notebook","On the wall","On his hand","On the desk"]]
+["Where did Ben go?","The science museum",["The science museum","The zoo","The beach","The station"]],
+["Who went with Ben?","His classmates",["His classmates","His parents","His brother","His teacher only"]],
+["What did they learn about?","Planets and space",["Planets and space","Food and health","Music and art","Animals"]],
+["Where did Ben write notes?","In his notebook",["In his notebook","On the wall","On a ticket","In a dictionary"]]
 ]
 },
 {
-text:"Grace wants to stay healthy. She eats vegetables, drinks enough water, and exercises in the park every weekend.",
+text:"Grace wants to stay healthy. She eats vegetables every day and exercises in the park every weekend.",
 qs:[
-["What does Grace want?","To stay healthy",["To stay healthy","To be late","To buy candy","To sleep all day"]],
-["What does she eat?","Vegetables",["Vegetables","Candy","Ice cream","Chips"]],
-["Where does she exercise?","In the park",["In the park","In the bank","At the airport","In the library"]],
-["How often does she exercise there?","Every weekend",["Every weekend","Every hour","Every month","Every year"]]
+["What does Grace want?","To stay healthy",["To stay healthy","To buy a dog","To visit a museum","To learn music"]],
+["What does she eat every day?","Vegetables",["Vegetables","Candy","Cake","Hamburgers"]],
+["Where does she exercise?","In the park",["In the park","In the library","At the station","At the restaurant"]],
+["How often does she exercise there?","Every weekend",["Every weekend","Every night","Once a year","Never"]]
 ]
 },
 {
 text:"Ruby saves money to buy a dictionary. She thinks a dictionary is useful because it helps her learn new words.",
 qs:[
-["What does Ruby save money to buy?","A dictionary",["A dictionary","A bicycle","A phone","A dress"]],
-["Why is it useful?","It helps her learn new words.",["It helps her learn new words.","It makes food.","It plays music.","It cleans rooms."]],
-["What does Ruby learn?","New words",["New words","New songs","New games","New dances"]],
-["What does Ruby do with money?","Saves it",["Saves it","Throws it away","Loses it","Borrows it"]]
+["What does Ruby save money to buy?","A dictionary",["A dictionary","A ticket","A dress","A sandwich"]],
+["Why is it useful?","It helps her learn new words",["It helps her learn new words","It is cheap","It is small","It is red"]],
+["What does Ruby learn?","New words",["New words","New songs","New games","New sports"]],
+["What does Ruby do with money?","Saves it",["Saves it","Throws it away","Loses it","Gives it to a dog"]]
 ]
 }
 ];
 
-readings.forEach(function(r){
-  r.qs.forEach(function(item){
-    addQuestion("閱讀","Reading: "+r.text+"\n\nQuestion: "+item[0],item[2],item[1]);
-  });
-});
-
-const extraWords=["exciting","tired","cleaner","carefully","quickly","slowly","usually","sometimes","beautiful","important","different","healthy","dangerous","comfortable","popular","special","successful","surprised","necessary","possible"];
-const extraSentences=[
-"The movie was very ___.",
-"I felt ___ after running.",
-"The classroom is ___ than before.",
-"Please do your homework ___.",
-"The rabbit runs very ___.",
-"He walks very ___.",
-"I ___ get up at six thirty.",
-"She ___ visits her grandparents.",
-"The flower is very ___.",
-"It is ___ to study every day."
-];
+for(let i=0;i<55;i++){
+  const r=readings[i%readings.length];
+  const item=r.qs[i%r.qs.length];
+  addQuestion("短文聽力",r.text, item[0], item[1], item[2]);
+}
 
 while(bank.length<300){
-  const i=bank.length;
-  const ans=extraWords[i%extraWords.length];
-  const q=extraSentences[i%extraSentences.length]+" ("+(i+1)+")";
-  addQuestion("進階填空",q,[ans].concat(wrong(extraWords,ans,3)),ans);
+  const n=bank.length+1;
+  addQuestion("生活聽力",
+  `This is listening question number ${n}. Please choose the best answer.`,
+  `Listening question number ${n}. What should you do?`,
+  "Choose the best answer",
+  ["Choose the best answer","Close the book","Go to sleep","Play games"]);
 }
 
-let questions=[];
-let current=0;
-let answers=[];
-let time=60*60;
-let timer=null;
-
-function esc(str){
-  return String(str).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
-}
+bank=bank.slice(0,300);
 
 function startExam(){
   const name=document.getElementById("studentName").value.trim();
@@ -332,7 +242,7 @@ function startExam(){
     time--;
     const m=Math.floor(time/60);
     const s=time%60;
-    document.getElementById("timer").innerText="剩餘時間："+m+":"+String(s).padStart(2,"0");
+    document.getElementById("timer").innerText="剩餘時間："+m+":"+(s<10?"0":"")+s;
     if(time<=0)finish();
   },1000);
 }
@@ -340,29 +250,28 @@ function startExam(){
 function showQuestion(){
   const q=questions[current];
   document.getElementById("info").innerText="第 "+(current+1)+" / "+questions.length+" 題";
-  document.getElementById("type").innerHTML='<span class="badge">'+esc(q.type)+'</span>';
-  document.getElementById("question").innerHTML='<button class="secondary" onclick="speakQuestion()">🔊 播放題目</button><br><br>'+q.q;
+  document.getElementById("type").innerText=q.type;
+  document.getElementById("question").innerText=q.q;
   let html="";
   shuffle(q.options.slice()).forEach(function(opt){
-    html+='<label class="option"><input type="radio" name="ans" value="'+esc(opt)+'"> '+esc(opt)+'</label>';
+    html+=`<label class="option"><input type="radio" name="ans" value="${opt}">${opt}</label>`;
   });
   document.getElementById("options").innerHTML=html;
 }
+
 function speakQuestion(){
   const q=questions[current];
-
   speechSynthesis.cancel();
-
-  const msg=new SpeechSynthesisUtterance(q.q);
-
+  const text=q.listen+" Question: "+q.q;
+  const msg=new SpeechSynthesisUtterance(text);
   msg.lang="en-US";
-  msg.rate=0.9;
+  msg.rate=0.85;
   msg.pitch=1;
-
   speechSynthesis.speak(msg);
 }
+
 function nextQuestion(){
-  const selected=document.querySelector("input[name='ans']:checked");
+  const selected=document.querySelector('input[name="ans"]:checked');
   answers[current]=selected?selected.value:"未作答";
   current++;
   if(current>=questions.length)finish();
@@ -373,20 +282,49 @@ function finish(){
   if(timer)clearInterval(timer);
   document.getElementById("exam").classList.add("hidden");
   document.getElementById("result").classList.remove("hidden");
+
   let correct=0;
   let review="";
   questions.forEach(function(q,i){
     const user=answers[i]||"未作答";
     if(user===q.answer)correct++;
     else{
-      review+='<div class="review"><b>第'+(i+1)+'題｜'+esc(q.type)+'</b><br>'+esc(q.q)+'<br>你的答案：'+esc(user)+'<br>正確答案：<b>'+esc(q.answer)+'</b></div>';
+      review+=`<div class="review"><b>第${i+1}題</b><br>${q.q}<br>你的答案：${user}<br>正確答案：${q.answer}</div>`;
     }
   });
+
   const percent=Math.round(correct/questions.length*100);
   const name=document.getElementById("studentName").value.trim();
   const cls=document.getElementById("studentClass").value.trim();
-  document.getElementById("score").innerHTML=(cls?esc(cls)+"｜":"")+esc(name)+"<br>成績："+percent+" 分<br>答對："+correct+" / "+questions.length+" 題";
-  document.getElementById("review").innerHTML=review||'<div class="review ok">太棒了，全部答對！</div>';
+  const date=new Date().toLocaleString();
+
+  document.getElementById("score").innerHTML=
+  `<h2>${name} ${cls?("｜"+cls):""}</h2>
+  <h2>分數：${percent} 分</h2>
+  <p>答對：${correct} / ${questions.length}</p>
+  <p>完成時間：${date}</p>`;
+
+  saveRank({name,cls,percent,correct,total:questions.length,date});
+  showRank();
+  document.getElementById("review").innerHTML=review || "<p>全部答對，太棒了！</p>";
+}
+
+function saveRank(data){
+  const key="englishListeningRank";
+  const old=JSON.parse(localStorage.getItem(key)||"[]");
+  old.push(data);
+  old.sort((a,b)=>b.percent-a.percent || b.correct-a.correct);
+  localStorage.setItem(key,JSON.stringify(old.slice(0,10)));
+}
+
+function showRank(){
+  const key="englishListeningRank";
+  const list=JSON.parse(localStorage.getItem(key)||"[]");
+  let html="";
+  list.forEach(function(r,i){
+    html+=`<div class="rank">${i+1}. ${r.name} ${r.cls?("｜"+r.cls):""}｜${r.percent}分｜${r.correct}/${r.total}<br><small>${r.date}</small></div>`;
+  });
+  document.getElementById("ranking").innerHTML=html || "<p>目前沒有排行榜資料</p>";
 }
 </script>
 </body>
