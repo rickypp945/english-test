@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>五年級下學期數學期末複習</title>
+<title>五下數學期末複習｜翰林版</title>
 <style>
 body{font-family:Arial,"Microsoft JhengHei",sans-serif;background:#f4f7fb;margin:0;color:#222}
 header{background:#0b6bcb;color:white;padding:18px;text-align:center}
@@ -13,7 +13,7 @@ button{background:#0b6bcb;color:white;border:0;border-radius:10px;padding:12px 1
 button.secondary{background:#666}
 button.danger{background:#c62828}
 .option{display:block;margin:10px 0;padding:10px;border:1px solid #ddd;border-radius:10px}
-input[type=text]{width:95%;padding:10px;font-size:16px;border:1px solid #aaa;border-radius:8px}
+input,select{width:95%;padding:10px;font-size:16px;border:1px solid #aaa;border-radius:8px}
 .timer{font-size:22px;font-weight:bold;color:#c62828}
 .correct{color:#138a36;font-weight:bold}
 .wrong{color:#c62828;font-weight:bold}
@@ -24,25 +24,37 @@ input[type=text]{width:95%;padding:10px;font-size:16px;border:1px solid #aaa;bor
 <body>
 
 <header>
-<h1>五年級下學期數學期末考複習</h1>
-<p>翰林版｜100題題庫｜隨機50題｜限時40分鐘</p>
+<h1>五年級下學期數學期末複習</h1>
+<p>翰林版｜300+題庫｜隨機出題｜錯題複習</p>
 </header>
 
 <div class="container">
 
 <div id="startBox" class="card">
-<h2>測驗說明</h2>
-<p>本次測驗會從100題題庫中隨機抽出50題。</p>
-<p>題型包含：選擇題、填充題、應用題。</p>
-<p>滿分100分，每題2分。</p>
-<p>交卷後會顯示分數、錯題、正確答案與解析。</p>
+<h2>選擇測驗模式</h2>
+<p>模擬考：隨機50題，限時40分鐘。</p>
+<p>單元練習：可選單元，隨機20題。</p>
+
+<select id="mode">
+<option value="exam">模擬考：隨機50題｜40分鐘</option>
+<option value="volume">單元練習：體積與容積</option>
+<option value="surface">單元練習：表面積</option>
+<option value="fraction">單元練習：分數乘除</option>
+<option value="decimal">單元練習：小數乘除</option>
+<option value="average">單元練習：平均數</option>
+<option value="speed">單元練習：速率</option>
+<option value="wrong">錯題複習</option>
+</select>
+
+<br><br>
 <button onclick="startTest()">開始測驗</button>
+<button class="danger" onclick="clearWrong()">清除錯題紀錄</button>
 </div>
 
 <div id="quizBox" class="hide">
 <div class="card">
 <div class="timer">剩餘時間：<span id="timer">40:00</span></div>
-<div class="small">請完成後按最下方「交卷」。</div>
+<div class="small">每題2分，完成後請按最下方交卷。</div>
 </div>
 <form id="quizForm"></form>
 <button onclick="submitTest()">交卷</button>
@@ -54,224 +66,272 @@ input[type=text]{width:95%;padding:10px;font-size:16px;border:1px solid #aaa;bor
 </div>
 
 <script>
-const questionBank = [
-{type:"choice",q:"1立方公尺等於多少立方公分？",options:["1000","10000","100000","1000000"],a:"1000000",ex:"1公尺=100公分，所以1立方公尺=100×100×100=1000000立方公分。"},
-{type:"choice",q:"長方體長8公分、寬5公分、高3公分，體積是多少？",options:["16","40","120","240"],a:"120",ex:"體積=長×寬×高=8×5×3=120。"},
-{type:"choice",q:"正方體邊長6公分，體積是多少？",options:["36","72","216","432"],a:"216",ex:"正方體體積=邊長×邊長×邊長=6×6×6=216。"},
-{type:"choice",q:"1公升等於多少毫升？",options:["10","100","1000","10000"],a:"1000",ex:"1公升=1000毫升。"},
-{type:"choice",q:"3.5公升等於多少毫升？",options:["35","350","3500","35000"],a:"3500",ex:"3.5×1000=3500毫升。"},
-{type:"choice",q:"長方體表面積公式是哪一個？",options:["長×寬×高","(長×寬+長×高+寬×高)×2","長+寬+高","長×寬×2"],a:"(長×寬+長×高+寬×高)×2",ex:"長方體有3組相對面，所以表面積=(長×寬+長×高+寬×高)×2。"},
-{type:"choice",q:"正方體邊長4公分，表面積是多少？",options:["16","64","96","128"],a:"96",ex:"正方體表面積=邊長×邊長×6=4×4×6=96。"},
-{type:"choice",q:"下列哪一個圖形一定有4條對稱軸？",options:["長方形","正方形","平行四邊形","梯形"],a:"正方形",ex:"正方形有4條對稱軸。"},
-{type:"choice",q:"下列哪一個是線對稱圖形？",options:["一般平行四邊形","任意三角形","正六邊形","不規則四邊形"],a:"正六邊形",ex:"正六邊形具有多條對稱軸。"},
-{type:"choice",q:"5個數的總和是80，平均數是多少？",options:["12","14","16","18"],a:"16",ex:"平均數=總和÷個數=80÷5=16。"},
-{type:"choice",q:"平均數是18，資料有6個，總和是多少？",options:["24","72","108","120"],a:"108",ex:"總和=平均數×個數=18×6=108。"},
-{type:"choice",q:"汽車2小時行駛120公里，平均速率是多少？",options:["40公里/時","50公里/時","60公里/時","80公里/時"],a:"60公里/時",ex:"速率=距離÷時間=120÷2=60。"},
-{type:"choice",q:"速率每小時70公里，行駛3小時，距離是多少？",options:["140","180","210","240"],a:"210",ex:"距離=速率×時間=70×3=210公里。"},
-{type:"choice",q:"距離150公里，速率每小時50公里，需要幾小時？",options:["2","3","4","5"],a:"3",ex:"時間=距離÷速率=150÷50=3小時。"},
-{type:"choice",q:"2/3 × 6 = ?",options:["2","3","4","6"],a:"4",ex:"2/3×6=12/3=4。"},
-{type:"choice",q:"3/4 × 8 = ?",options:["4","5","6","7"],a:"6",ex:"3/4×8=24/4=6。"},
-{type:"choice",q:"1/2 ÷ 1/4 = ?",options:["1","2","3","4"],a:"2",ex:"除以分數等於乘以倒數：1/2×4=2。"},
-{type:"choice",q:"2/5 ÷ 2 = ?",options:["1/5","2/5","4/5","1"],a:"1/5",ex:"2/5÷2=2/5×1/2=1/5。"},
-{type:"choice",q:"0.6 × 0.4 = ?",options:["0.024","0.24","2.4","24"],a:"0.24",ex:"6×4=24，兩個因數共有2位小數，所以是0.24。"},
-{type:"choice",q:"3.6 ÷ 0.6 = ?",options:["0.6","6","60","216"],a:"6",ex:"3.6÷0.6=36÷6=6。"},
-{type:"choice",q:"12.5 × 8 = ?",options:["10","100","1000","80"],a:"100",ex:"12.5×8=100。"},
-{type:"choice",q:"4.8 ÷ 1.2 = ?",options:["2","3","4","5"],a:"4",ex:"4.8÷1.2=48÷12=4。"},
-{type:"choice",q:"下列哪一個容量最大？",options:["900毫升","1公升","750毫升","0.8公升"],a:"1公升",ex:"1公升=1000毫升，最大。"},
-{type:"choice",q:"長方體的長、寬、高都變成2倍，體積變成幾倍？",options:["2倍","4倍","6倍","8倍"],a:"8倍",ex:"2×2×2=8倍。"},
-{type:"choice",q:"正方體有幾個面？",options:["4","5","6","8"],a:"6",ex:"正方體有6個面。"},
-{type:"choice",q:"正方體有幾條邊？",options:["6","8","10","12"],a:"12",ex:"正方體有12條邊。"},
-{type:"choice",q:"一個數的3/5是18，這個數是多少？",options:["24","30","36","45"],a:"30",ex:"18÷3/5=18×5/3=30。"},
-{type:"choice",q:"8的1/4是多少？",options:["1","2","3","4"],a:"2",ex:"8×1/4=2。"},
-{type:"choice",q:"36是9的幾倍？",options:["3","4","5","6"],a:"4",ex:"36÷9=4。"},
-{type:"choice",q:"下列哪個算式可求平均速率？",options:["距離×時間","距離÷時間","時間÷距離","速率÷時間"],a:"距離÷時間",ex:"速率=距離÷時間。"},
+let questionBank=[];
+let selected=[];
+let wrongList=[];
+let timerInterval;
+let timeLeft=40*60;
 
-{type:"input",q:"長方體長10公分、寬4公分、高5公分，體積是幾立方公分？",a:["200"],ex:"10×4×5=200。"},
-{type:"input",q:"正方體邊長5公分，體積是幾立方公分？",a:["125"],ex:"5×5×5=125。"},
-{type:"input",q:"2公升500毫升等於幾毫升？",a:["2500"],ex:"2公升=2000毫升，2000+500=2500。"},
-{type:"input",q:"4500毫升等於幾公升？只填小數。",a:["4.5"],ex:"4500÷1000=4.5公升。"},
-{type:"input",q:"長方體長6、寬4、高3，表面積是多少？",a:["108"],ex:"(6×4+6×3+4×3)×2=(24+18+12)×2=108。"},
-{type:"input",q:"正方體邊長7公分，表面積是多少？",a:["294"],ex:"7×7×6=294。"},
-{type:"input",q:"80公里用2小時走完，平均速率是每小時幾公里？",a:["40"],ex:"80÷2=40。"},
-{type:"input",q:"每小時騎15公里，騎4小時，共幾公里？",a:["60"],ex:"15×4=60。"},
-{type:"input",q:"距離96公里，速率每小時24公里，需要幾小時？",a:["4"],ex:"96÷24=4。"},
-{type:"input",q:"五次小考分數為80、90、85、75、95，平均是幾分？",a:["85"],ex:"總和425，425÷5=85。"},
-{type:"input",q:"4個數平均是25，總和是多少？",a:["100"],ex:"25×4=100。"},
-{type:"input",q:"7、8、9、10、11的平均數是多少？",a:["9"],ex:"總和45，45÷5=9。"},
-{type:"input",q:"3/5 × 10 = ?",a:["6"],ex:"3/5×10=30/5=6。"},
-{type:"input",q:"5/6 × 12 = ?",a:["10"],ex:"5/6×12=60/6=10。"},
-{type:"input",q:"2/3 ÷ 4 = ? 請填最簡分數。",a:["1/6"],ex:"2/3÷4=2/3×1/4=2/12=1/6。"},
-{type:"input",q:"3/4 ÷ 3 = ? 請填最簡分數。",a:["1/4"],ex:"3/4÷3=3/4×1/3=3/12=1/4。"},
-{type:"input",q:"0.7×0.8=?",a:["0.56"],ex:"7×8=56，兩位小數，所以0.56。"},
-{type:"input",q:"2.4×0.5=?",a:["1.2"],ex:"2.4的一半是1.2。"},
-{type:"input",q:"5.6÷0.7=?",a:["8"],ex:"56÷7=8。"},
-{type:"input",q:"9.6÷1.2=?",a:["8"],ex:"96÷12=8。"},
-{type:"input",q:"長方體體積240，長10、寬6，高是多少？",a:["4"],ex:"高=240÷10÷6=4。"},
-{type:"input",q:"正方體體積64，邊長是多少？",a:["4"],ex:"4×4×4=64。"},
-{type:"input",q:"1.25公升等於幾毫升？",a:["1250"],ex:"1.25×1000=1250。"},
-{type:"input",q:"3600毫升等於幾公升？",a:["3.6"],ex:"3600÷1000=3.6。"},
-{type:"input",q:"一個長方體水箱可裝18公升，等於幾毫升？",a:["18000"],ex:"18×1000=18000。"},
-{type:"input",q:"一個數的1/3是12，這個數是多少？",a:["36"],ex:"12÷1/3=36。"},
-{type:"input",q:"一個數的2/5是20，這個數是多少？",a:["50"],ex:"20÷2/5=20×5/2=50。"},
-{type:"input",q:"24的3/8是多少？",a:["9"],ex:"24×3/8=9。"},
-{type:"input",q:"45的2/9是多少？",a:["10"],ex:"45×2/9=10。"},
-{type:"input",q:"100的0.35倍是多少？",a:["35"],ex:"100×0.35=35。"},
-{type:"input",q:"12.8÷0.4=?",a:["32"],ex:"128÷4=32。"},
-{type:"input",q:"0.25×16=?",a:["4"],ex:"0.25是1/4，16×1/4=4。"},
-{type:"input",q:"一個正方體表面積150，單面面積是多少？",a:["25"],ex:"150÷6=25。"},
-{type:"input",q:"一個正方體單面面積36，邊長是多少？",a:["6"],ex:"6×6=36。"},
-{type:"input",q:"10、20、30、40的平均數是多少？",a:["25"],ex:"總和100，100÷4=25。"},
-{type:"input",q:"平均數15，資料有8個，總和是多少？",a:["120"],ex:"15×8=120。"},
-{type:"input",q:"時速60公里，30分鐘走幾公里？",a:["30"],ex:"30分鐘=0.5小時，60×0.5=30。"},
-{type:"input",q:"走18公里花3小時，時速是多少？",a:["6"],ex:"18÷3=6。"},
-{type:"input",q:"長方體長12、寬5、高2，體積是多少？",a:["120"],ex:"12×5×2=120。"},
-{type:"input",q:"正方體邊長9，體積是多少？",a:["729"],ex:"9×9×9=729。"},
+function add(cat,type,q,a,ex,options=[]){
+ questionBank.push({cat,type,q,a,ex,options});
+}
 
-{type:"input",q:"應用題：一個水箱長50公分、寬30公分、高40公分，體積是多少立方公分？",a:["60000"],ex:"50×30×40=60000立方公分。"},
-{type:"input",q:"應用題：一個水箱容量是60000立方公分，等於幾公升？",a:["60"],ex:"1000立方公分=1公升，所以60000÷1000=60公升。"},
-{type:"input",q:"應用題：小明騎車每小時12公里，2.5小時可騎幾公里？",a:["30"],ex:"12×2.5=30公里。"},
-{type:"input",q:"應用題：一輛車3小時行駛210公里，平均時速是多少？",a:["70"],ex:"210÷3=70公里/時。"},
-{type:"input",q:"應用題：一瓶果汁1.5公升，倒成每杯250毫升，可以倒幾杯？",a:["6"],ex:"1.5公升=1500毫升，1500÷250=6杯。"},
-{type:"input",q:"應用題：班上5位同學身高總和725公分，平均身高幾公分？",a:["145"],ex:"725÷5=145。"},
-{type:"input",q:"應用題：四次測驗平均80分，總分是多少？",a:["320"],ex:"80×4=320。"},
-{type:"input",q:"應用題：一盒蛋糕吃掉3/8，還剩幾分之幾？",a:["5/8"],ex:"1-3/8=5/8。"},
-{type:"input",q:"應用題：一條繩子長24公尺，用掉1/3，用掉幾公尺？",a:["8"],ex:"24×1/3=8。"},
-{type:"input",q:"應用題：一條繩子用掉12公尺，是全長的2/5，全長幾公尺？",a:["30"],ex:"12÷2/5=12×5/2=30。"},
-{type:"input",q:"應用題：長方體禮盒長20、寬15、高10，表面積是多少平方公分？",a:["1300"],ex:"(20×15+20×10+15×10)×2=(300+200+150)×2=1300。"},
-{type:"input",q:"應用題：正方體盒子邊長8公分，表面積是多少平方公分？",a:["384"],ex:"8×8×6=384。"},
-{type:"input",q:"應用題：一塊巧克力有36小格，吃掉5/6，吃掉幾格？",a:["30"],ex:"36×5/6=30。"},
-{type:"input",q:"應用題：小華0.8小時走4公里，平均每小時走幾公里？",a:["5"],ex:"4÷0.8=5。"},
-{type:"input",q:"應用題：時速90公里，走180公里需要幾小時？",a:["2"],ex:"180÷90=2。"},
-{type:"input",q:"應用題：一個容器裝水2.75公升，等於幾毫升？",a:["2750"],ex:"2.75×1000=2750。"},
-{type:"input",q:"應用題：6瓶水共4.8公升，平均每瓶幾公升？",a:["0.8"],ex:"4.8÷6=0.8。"},
-{type:"input",q:"應用題：一個數的3/4是21，這個數是多少？",a:["28"],ex:"21÷3/4=21×4/3=28。"},
-{type:"input",q:"應用題：某生前三次平均88分，三次總分是多少？",a:["264"],ex:"88×3=264。"},
-{type:"input",q:"應用題：長方體體積360，長12、寬6，高是多少？",a:["5"],ex:"360÷12÷6=5。"},
-{type:"choice",q:"哪一個不是長方體的特徵？",options:["有6個面","有12條邊","有8個頂點","所有邊一定一樣長"],a:"所有邊一定一樣長",ex:"長方體不一定所有邊一樣長。"},
-{type:"choice",q:"哪一個是體積單位？",options:["平方公分","公分","立方公分","公斤"],a:"立方公分",ex:"體積使用立方單位。"},
-{type:"choice",q:"哪一個是面積單位？",options:["立方公分","平方公分","公升","毫升"],a:"平方公分",ex:"面積使用平方單位。"},
-{type:"choice",q:"1立方公分的水約等於幾毫升？",options:["1","10","100","1000"],a:"1",ex:"1立方公分=1毫升。"},
-{type:"choice",q:"5000立方公分等於幾公升？",options:["0.5","5","50","500"],a:"5",ex:"1000立方公分=1公升，所以5000=5公升。"},
-{type:"choice",q:"0.75用分數表示是？",options:["1/4","1/2","3/4","4/3"],a:"3/4",ex:"0.75=75/100=3/4。"},
-{type:"choice",q:"1.2×0.3=?",options:["0.36","3.6","36","0.036"],a:"0.36",ex:"12×3=36，兩位小數，所以0.36。"},
-{type:"choice",q:"6÷0.5=?",options:["3","6","12","30"],a:"12",ex:"除以0.5等於乘以2。"},
-{type:"choice",q:"哪一個平均數最大？",options:["10、20、30","20、20、20","5、25、30","15、25、35"],a:"15、25、35",ex:"平均為25，其餘為20、20、20。"},
-{type:"choice",q:"下列哪個說法正確？",options:["距離=速率÷時間","時間=距離÷速率","速率=時間÷距離","距離=時間÷速率"],a:"時間=距離÷速率",ex:"速率、時間、距離公式：時間=距離÷速率。"}
+function buildQuestions(){
+
+for(let l=4;l<=14;l++){
+ for(let w=3;w<=10;w++){
+  let h=(l+w)%8+3;
+  add("volume","input",`長方體長${l}公分、寬${w}公分、高${h}公分，體積是多少立方公分？`,[String(l*w*h)],`體積=長×寬×高=${l}×${w}×${h}=${l*w*h}`);
+ }
+}
+
+for(let a=3;a<=12;a++){
+ add("volume","input",`正方體邊長${a}公分，體積是多少立方公分？`,[String(a*a*a)],`正方體體積=邊長×邊長×邊長=${a}×${a}×${a}=${a*a*a}`);
+}
+
+for(let ml=1000;ml<=9000;ml+=500){
+ add("volume","input",`${ml}毫升等於幾公升？`,[String(ml/1000)],`${ml}÷1000=${ml/1000}公升`);
+}
+
+for(let l=1;l<=9;l++){
+ add("volume","input",`${l}.5公升等於幾毫升？`,[String(l*1000+500)],`${l}.5×1000=${l*1000+500}毫升`);
+}
+
+for(let l=5;l<=15;l++){
+ for(let w=3;w<=9;w+=2){
+  let h=4;
+  let ans=(l*w+l*h+w*h)*2;
+  add("surface","input",`長方體長${l}公分、寬${w}公分、高${h}公分，表面積是多少平方公分？`,[String(ans)],`表面積=(長×寬+長×高+寬×高)×2=(${l*w}+${l*h}+${w*h})×2=${ans}`);
+ }
+}
+
+for(let a=3;a<=15;a++){
+ add("surface","input",`正方體邊長${a}公分，表面積是多少平方公分？`,[String(a*a*6)],`正方體表面積=邊長×邊長×6=${a}×${a}×6=${a*a*6}`);
+}
+
+for(let n=12;n<=96;n+=6){
+ add("fraction","input",`${n}的1/3是多少？`,[String(n/3)],`${n}×1/3=${n/3}`);
+ add("fraction","input",`${n}的1/4是多少？`,[String(n/4)],`${n}×1/4=${n/4}`);
+}
+
+for(let n=10;n<=90;n+=5){
+ add("fraction","input",`${n}的2/5是多少？`,[String(n*2/5)],`${n}×2/5=${n*2/5}`);
+}
+
+let fracSet=[
+["1/2","1/4","2"],["2/3","1/3","2"],["3/4","1/4","3"],
+["2/5","1/5","2"],["5/6","1/6","5"],["3/8","1/8","3"]
 ];
+fracSet.forEach(f=>{
+ add("fraction","choice",`${f[0]} ÷ ${f[1]} = ?`,f[2],`除以分數等於乘以倒數。`,[f[2],"1","4","6"]);
+});
 
-let selected=[], timerInterval, timeLeft=40*60, wrongList=[];
+for(let a=2;a<=9;a++){
+ for(let b=2;b<=9;b++){
+  let x=(a/10).toFixed(1);
+  let y=(b/10).toFixed(1);
+  let ans=(x*y).toFixed(2).replace(/0$/,"");
+  add("decimal","input",`${x} × ${y} = ?`,[ans],`${x}×${y}=${ans}`);
+ }
+}
+
+for(let a=12;a<=96;a+=6){
+ let b=0.6;
+ let ans=a/10/b;
+ add("decimal","input",`${(a/10).toFixed(1)} ÷ 0.6 = ?`,[String(Number(ans.toFixed(2)))],`小數除法可同乘10再計算。`);
+}
+
+for(let a=60;a<=200;a+=10){
+ let b=5;
+ add("average","input",`${b}個數的總和是${a}，平均數是多少？`,[String(a/b)],`平均數=總和÷個數=${a}÷${b}=${a/b}`);
+}
+
+for(let avg=60;avg<=100;avg+=5){
+ add("average","input",`4次測驗平均${avg}分，總分是多少？`,[String(avg*4)],`總分=平均×次數=${avg}×4=${avg*4}`);
+}
+
+for(let d=60;d<=300;d+=30){
+ for(let t=2;t<=5;t++){
+  add("speed","input",`${t}小時行駛${d}公里，平均時速是多少公里？`,[String(d/t)],`速率=距離÷時間=${d}÷${t}=${d/t}`);
+ }
+}
+
+for(let s=30;s<=90;s+=10){
+ for(let t=2;t<=5;t++){
+  add("speed","input",`時速${s}公里，行駛${t}小時，共走幾公里？`,[String(s*t)],`距離=速率×時間=${s}×${t}=${s*t}`);
+ }
+}
+
+add("volume","choice","1立方公分等於多少毫升？","1","1立方公分=1毫升。",["1","10","100","1000"]);
+add("volume","choice","1公升等於多少毫升？","1000","1公升=1000毫升。",["10","100","1000","10000"]);
+add("surface","choice","正方體有幾個面？","6","正方體有6個面。",["4","5","6","8"]);
+add("surface","choice","長方體表面積公式是哪一個？","(長×寬+長×高+寬×高)×2","長方體有三組相對面。",["長×寬×高","(長×寬+長×高+寬×高)×2","長+寬+高","長×寬"]);
+add("average","choice","平均數的算法是？","總和÷個數","平均數=總和÷個數。",["總和×個數","總和÷個數","個數÷總和","最大值÷最小值"]);
+add("speed","choice","速率的算法是？","距離÷時間","速率=距離÷時間。",["距離×時間","距離÷時間","時間÷距離","速率×時間"]);
+}
+
+buildQuestions();
 
 function shuffle(arr){
-  return arr.map(v=>[Math.random(),v]).sort((a,b)=>a[0]-b[0]).map(v=>v[1]);
+ return arr.map(v=>[Math.random(),v]).sort((a,b)=>a[0]-b[0]).map(v=>v[1]);
 }
 
 function startTest(){
-  selected = shuffle(questionBank).slice(0,50);
-  document.getElementById("startBox").classList.add("hide");
-  document.getElementById("quizBox").classList.remove("hide");
-  renderQuiz();
-  startTimer();
+ let mode=document.getElementById("mode").value;
+ let pool=[];
+ let count=50;
+ timeLeft=40*60;
+
+ if(mode==="exam"){
+  pool=questionBank;
+  count=50;
+ }else if(mode==="wrong"){
+  pool=JSON.parse(localStorage.getItem("mathWrong")||"[]");
+  count=Math.min(30,pool.length);
+  timeLeft=30*60;
+  if(pool.length===0){alert("目前沒有錯題紀錄");return;}
+ }else{
+  pool=questionBank.filter(q=>q.cat===mode);
+  count=20;
+  timeLeft=20*60;
+ }
+
+ selected=shuffle(pool).slice(0,count);
+ document.getElementById("startBox").classList.add("hide");
+ document.getElementById("quizBox").classList.remove("hide");
+ document.getElementById("resultBox").classList.add("hide");
+ document.getElementById("reviewBox").classList.add("hide");
+ renderQuiz();
+ startTimer();
 }
 
 function renderQuiz(){
-  const form=document.getElementById("quizForm");
-  form.innerHTML="";
-  selected.forEach((item,i)=>{
-    let html=`<div class="card"><h3>第${i+1}題</h3><p>${item.q}</p>`;
-    if(item.type==="choice"){
-      item.options.forEach(op=>{
-        html+=`<label class="option"><input type="radio" name="q${i}" value="${op}"> ${op}</label>`;
-      });
-    }else{
-      html+=`<input type="text" name="q${i}" placeholder="請輸入答案，例如：30、0.8、5/8">`;
-    }
-    html+=`</div>`;
-    form.innerHTML+=html;
-  });
+ const form=document.getElementById("quizForm");
+ form.innerHTML="";
+ selected.forEach((item,i)=>{
+  let html=`<div class="card"><h3>第${i+1}題</h3><p>${item.q}</p>`;
+  if(item.type==="choice"){
+   shuffle(item.options).forEach(op=>{
+    html+=`<label class="option"><input type="radio" name="q${i}" value="${op}"> ${op}</label>`;
+   });
+  }else{
+   html+=`<input type="text" name="q${i}" placeholder="請輸入答案，例如：30、0.8、5/8">`;
+  }
+  html+=`</div>`;
+  form.innerHTML+=html;
+ });
 }
 
 function startTimer(){
+ clearInterval(timerInterval);
+ updateTimer();
+ timerInterval=setInterval(()=>{
+  timeLeft--;
   updateTimer();
-  timerInterval=setInterval(()=>{
-    timeLeft--;
-    updateTimer();
-    if(timeLeft<=0){
-      clearInterval(timerInterval);
-      submitTest();
-    }
-  },1000);
+  if(timeLeft<=0){
+   clearInterval(timerInterval);
+   submitTest();
+  }
+ },1000);
 }
 
 function updateTimer(){
-  let m=Math.floor(timeLeft/60);
-  let s=timeLeft%60;
-  document.getElementById("timer").textContent=`${m}:${s<10?"0"+s:s}`;
+ let m=Math.floor(timeLeft/60);
+ let s=timeLeft%60;
+ document.getElementById("timer").textContent=`${m}:${s<10?"0"+s:s}`;
 }
 
 function cleanAns(v){
-  return String(v||"").replace(/\s/g,"").replace("：",":").replace("／","/").toLowerCase();
+ return String(v||"").replace(/\s/g,"").replace("：",":").replace("／","/").toLowerCase();
 }
 
 function submitTest(){
-  clearInterval(timerInterval);
-  let score=0;
-  wrongList=[];
-  selected.forEach((item,i)=>{
-    let user="";
-    if(item.type==="choice"){
-      let checked=document.querySelector(`input[name="q${i}"]:checked`);
-      user=checked?checked.value:"";
-      if(user===item.a) score+=2;
-      else wrongList.push({no:i+1,item,user:user||"未作答"});
-    }else{
-      let input=document.querySelector(`input[name="q${i}"]`);
-      user=input?input.value:"";
-      let accepts=Array.isArray(item.a)?item.a:[item.a];
-      let ok=accepts.some(ans=>cleanAns(ans)===cleanAns(user));
-      if(ok) score+=2;
-      else wrongList.push({no:i+1,item,user:user||"未作答"});
-    }
-  });
-  showResult(score);
+ clearInterval(timerInterval);
+ let score=0;
+ wrongList=[];
+ selected.forEach((item,i)=>{
+  let user="";
+  if(item.type==="choice"){
+   let checked=document.querySelector(`input[name="q${i}"]:checked`);
+   user=checked?checked.value:"";
+   if(user===item.a) score+=2;
+   else wrongList.push({no:i+1,item,user:user||"未作答"});
+  }else{
+   let input=document.querySelector(`input[name="q${i}"]`);
+   user=input?input.value:"";
+   let ok=item.a.some(ans=>cleanAns(ans)===cleanAns(user));
+   if(ok) score+=2;
+   else wrongList.push({no:i+1,item,user:user||"未作答"});
+  }
+ });
+
+ saveWrong();
+ showResult(score);
+}
+
+function saveWrong(){
+ let old=JSON.parse(localStorage.getItem("mathWrong")||"[]");
+ wrongList.forEach(w=>old.push(w.item));
+ let unique=[];
+ let seen=new Set();
+ old.forEach(q=>{
+  if(!seen.has(q.q)){
+   seen.add(q.q);
+   unique.push(q);
+  }
+ });
+ localStorage.setItem("mathWrong",JSON.stringify(unique.slice(-100)));
 }
 
 function showResult(score){
-  document.getElementById("quizBox").classList.add("hide");
-  const result=document.getElementById("resultBox");
-  result.classList.remove("hide");
-  let level=score>=90?"非常優秀":score>=80?"表現良好":score>=70?"還不錯":score>=60?"需要加強":"建議重新複習";
-  result.innerHTML=`
-    <h2>測驗完成</h2>
-    <p style="font-size:28px;font-weight:bold">成績：${score} / 100</p>
-    <p>評語：${level}</p>
-    <p>錯題數：${wrongList.length} 題</p>
-    <button onclick="showWrong()">錯題複習</button>
-    <button class="secondary" onclick="location.reload()">重新測驗</button>
-  `;
+ document.getElementById("quizBox").classList.add("hide");
+ const result=document.getElementById("resultBox");
+ result.classList.remove("hide");
+
+ let total=selected.length*2;
+ let percent=Math.round(score/total*100);
+ let level=percent>=90?"非常優秀":percent>=80?"表現良好":percent>=70?"還不錯":percent>=60?"需要加強":"建議重新複習";
+
+ result.innerHTML=`
+ <h2>測驗完成</h2>
+ <p style="font-size:28px;font-weight:bold">成績：${score} / ${total}</p>
+ <p>換算百分制：${percent}分</p>
+ <p>評語：${level}</p>
+ <p>錯題數：${wrongList.length} 題</p>
+ <button onclick="showWrong()">錯題複習</button>
+ <button class="secondary" onclick="location.reload()">重新測驗</button>
+ `;
 }
 
 function showWrong(){
-  const box=document.getElementById("reviewBox");
-  box.classList.remove("hide");
-  if(wrongList.length===0){
-    box.innerHTML=`<div class="card"><h2 class="correct">全部答對！太強了！</h2></div>`;
-    return;
-  }
-  let html=`<div class="card"><h2>錯題複習</h2></div>`;
-  wrongList.forEach(w=>{
-    let ans=Array.isArray(w.item.a)?w.item.a[0]:w.item.a;
-    html+=`
-      <div class="card">
-        <h3>第${w.no}題</h3>
-        <p>${w.item.q}</p>
-        <p class="wrong">你的答案：${w.user}</p>
-        <p class="correct">正確答案：${ans}</p>
-        <p>解析：${w.item.ex}</p>
-      </div>
-    `;
-  });
-  box.innerHTML=html;
-  window.scrollTo(0,document.body.scrollHeight);
+ const box=document.getElementById("reviewBox");
+ box.classList.remove("hide");
+
+ if(wrongList.length===0){
+  box.innerHTML=`<div class="card"><h2 class="correct">全部答對！太強了！</h2></div>`;
+  return;
+ }
+
+ let html=`<div class="card"><h2>錯題複習</h2></div>`;
+ wrongList.forEach(w=>{
+  let ans=Array.isArray(w.item.a)?w.item.a[0]:w.item.a;
+  html+=`
+  <div class="card">
+   <h3>第${w.no}題</h3>
+   <p>${w.item.q}</p>
+   <p class="wrong">你的答案：${w.user}</p>
+   <p class="correct">正確答案：${ans}</p>
+   <p>解析：${w.item.ex}</p>
+  </div>`;
+ });
+
+ box.innerHTML=html;
+ window.scrollTo(0,document.body.scrollHeight);
+}
+
+function clearWrong(){
+ localStorage.removeItem("mathWrong");
+ alert("錯題紀錄已清除");
 }
 </script>
 
